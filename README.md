@@ -17,4 +17,5 @@ Robot.java
 
 Compilar e Executar 
 $cd ./src/
+
 $javac *.java && java Star 
