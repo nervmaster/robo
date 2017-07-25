@@ -123,19 +123,19 @@ public class Star{
             for(int x = 0; x < desl[0].length; x++) {
                 int[] cell = {x,y};
                 if(Arrays.equals(this.pos, cell)) {
-                    System.out.printf("R ");
+                    System.out.printf("RR ");
                 }
                 else if(Arrays.equals(this.chegada, cell)) {
-                    System.out.printf("C ");
+                    System.out.printf("CC ");
                 }
                 else if(desl[y][x] == -1){
-                    System.out.printf("X ");
+                    System.out.printf("XX ");
                 }
                 else if(desl[y][x] == -10){
-                    System.out.printf("- ");
+                    System.out.printf("-- ");
                 }
                 else {
-                    System.out.printf("%d ", desl[y][x] + est[y][x]);
+                    System.out.printf("%02d ", desl[y][x] + est[y][x]);
                 }
             }
             System.out.printf("\n");
