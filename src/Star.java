@@ -15,8 +15,19 @@ public class Star{
 
     Robot robot;
     
-
     //Metodos privadas
+
+    void pause() 
+    {
+    	try
+    	{
+    		System.in.read();
+    	}
+    	catch(Exception e)
+    	{
+    		System.out.printf("Error?");
+    	}
+    }
 
     //Estima o custo de target ate a chegada
     private int estimateCost(int x, int y){
@@ -26,7 +37,10 @@ public class Star{
     }
 
     private boolean isNeighbor(int x, int y){
-        return (Math.abs(x - pos[0]) <= 1 || Math.abs(y = pos[1]) <= 1);
+    	int xdiff = Math.abs(x - pos[0]);
+    	int ydiff = Math.abs(y - pos[1]);
+
+    	return (xdiff == 1 && ydiff == 0) || (xdiff == 0 && ydiff == 1);
     }
 
     private void updateCost(boolean[] obs, int[] pos) {
@@ -68,12 +82,12 @@ public class Star{
                     result = new int[]{x,y};
                 }
 
-                //Prioridade para uma celula vizinha conseguir o valor
-                // else if(value > 0 && (value <= lowest && isNeighbor(x,y))) {
-                //     System.out.printf("old: %d new %d pos %d,%d\n", lowest, value, x, y);
-                //     lowest = value;
-                //     result = new int[]{x,y};
-                // }
+                // Prioridade para uma celula vizinha conseguir o valor
+                else if(value > 0 && (value <= lowest && isNeighbor(x,y))) {
+                    System.out.printf("To Neighbor pos %d,%d\n", x, y);
+                    lowest = value;
+                    result = new int[]{x,y};
+                }
             }
         }
         return result;
@@ -129,8 +143,7 @@ public class Star{
         System.out.print("\n");
     }
     public void start() {
-        Scanner keyboard = new Scanner(System.in);
-
+        
         while(!Arrays.equals(this.pos, this.chegada)){
 
             //Calcula pesos
@@ -144,7 +157,7 @@ public class Star{
             updateCost(obs, this.pos);
             
             this.print();
-            keyboard.next();
+            pause();
 
             //Vai ate a celula de menor valor
             int[] target_pos = lowestCellValue();
