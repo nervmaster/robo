@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
+
 import java.lang.Math;
 
 public class Star{
@@ -11,13 +13,119 @@ public class Star{
     //Acesso de matriz é em mat[lin][col] ou mat[y][x]
     int[][] desl;
     int[][] est;
-    
+    int[][] mini;
+    int[][] nn;
+    int[] path;
 
-    Robot robot;
+    FooRobot robot;
     
     //Metodos privadas
+    private void resetMini(){
+        for(int x = 0; x < mini.length; x++) {
+            for(int y = 0; y < mini[0].length; y++) {
+                mini[y][x] = 0;
+            }
+        }
+    }
 
-    void pause() 
+    private int[] getPathTo(int[] target) {
+        int[] walk = this.pos;
+        int lowest = Integer.MAX_VALUE;
+        
+        int x,y, index=0;
+        
+        resetMini();
+        for(int i = 0; i < path.length; i++) {
+            path[i] = -1;
+        }
+
+        while(!Arrays.equals(target, walk)) {
+            x = walk[0];
+            y = walk[1];
+            
+            //Neighbors
+            if(y > 0) {
+                nn[0][0] = x;   nn[0][1] = y-1;
+            } else { 
+                nn[0][0] = -1;  nn[0][1] = -1; 
+            }
+            
+            if(y > 0) {
+                nn[1][0] = x-1; nn[1][1] = y;
+            } else { 
+                nn[1][0] = -1;  nn[1][1] = -1; 
+            }
+            
+            if(y < this.desl[0].length-1) {
+                nn[2][0] = x;   nn[2][1] = y+1;
+            } else { 
+                nn[2][0] = -1;  nn[2][1] = -1; 
+            }
+            
+            if(x < this.desl.length-1) {
+                nn[3][0] = x+1; nn[3][1] = y;
+            } else { 
+                nn[3][0] = -1;  nn[3][1] = -1; 
+            }
+
+            //Para cada vizinho calcular o peso estimado
+            for(int[] n : nn) {
+                x = n[0]; y = n[1];
+                
+                if(x == -1) {
+                    continue;
+                }
+
+                if(est[y][x] == -10) {
+                    mini[y][x] = estimateCostTo(n, target);
+                }
+                else {
+                    mini[y][x] = -1;
+                }
+
+            }
+            
+            //Ir para o vizinho de menor valor
+            int low = Integer.MAX_VALUE;
+            int[] low_pos = {0,0};
+            int last_i = 0;
+            for(int i =0; i < nn.length; i++) {
+                x = nn[i][0]; y = nn[i][1];
+
+                if(x == -1) {
+                    continue;
+                }
+                if(Arrays.equals(nn[i],target)) {
+                    //JACKPOT
+                    low_pos = nn[i];
+                    last_i = i;
+                    break;
+                }
+
+                if(mini[y][x] >= 0 && mini[y][x] < low) {
+                    low = mini[y][x];
+                    low_pos = nn[i];
+                    last_i = i;
+
+                    //erase value for this cell
+                    mini[y][x] = -10;
+                }
+            }
+
+            path[index++] = last_i;
+            walk = low_pos;
+        }
+
+        return target;
+    }
+
+    private int estimateCostTo(int[] cell, int[] target) {
+        int custo_x = Math.abs(cell[0] - target[0]);
+        int custo_y = Math.abs(cell[1] - target[1]);
+        return custo_x + custo_y;
+    }
+
+    public void pause() 
     {
     	try
     	{
@@ -31,9 +139,8 @@ public class Star{
 
     //Estima o custo de target ate a chegada
     private int estimateCost(int x, int y){
-        int custo_x = Math.abs(x - this.chegada[0]);
-        int custo_y = Math.abs(y - this.chegada[1]);
-        return custo_x + custo_y;
+        int[] arg = {x,y};
+        return estimateCostTo(arg, this.chegada);
     }
 
     private boolean isNeighbor(int x, int y){
@@ -71,22 +178,21 @@ public class Star{
     }
 
     private int[] lowestCellValue() {
-        int lowest = -1;
+        int lowest = Integer.MAX_VALUE;
         int[] result = {-1,-1};
         for(int x = 0; x < desl.length; x++) {
             for(int y = 0; y < desl[0].length; y++) {
                 int value = desl[y][x] + est[y][x];
-                if(value > 0 && (lowest < 0 || value < lowest)) {
-                    System.out.printf("old: %d new %d pos %d,%d\n", lowest, value, x, y);
+                if(value > 0 && value < lowest) {
                     lowest = value;
-                    result = new int[]{x,y};
+                    result[0] = x; result[1] = y;
                 }
 
                 // Prioridade para uma celula vizinha conseguir o valor
                 else if(value > 0 && (value <= lowest && isNeighbor(x,y))) {
-                    System.out.printf("To Neighbor pos %d,%d\n", x, y);
+                    // System.out.printf("To Neighbor pos %d,%d\n", x, y);
                     lowest = value;
-                    result = new int[]{x,y};
+                    result[0] = x; result[1] = y;
                 }
             }
         }
@@ -108,13 +214,16 @@ public class Star{
         return mat;
     }
     
-    public Star(Robot robot, int[] saida, int[] chegada){
+    public Star(FooRobot robot, int[] saida, int[] chegada){
         this.robot = robot;
         this.chegada = chegada;
         this.saida = saida;
         this.pos = saida;
         this.desl = this.createMat(12, 12);
         this.est = this.createMat(12, 12);
+        this.mini = this.createMat(12, 12);
+        this.nn = new int[4][2];
+        this.path = new int[20];
     }
 
     public void print() {
@@ -131,8 +240,8 @@ public class Star{
                 else if(desl[y][x] == -1){
                     System.out.printf("XX ");
                 }
-                else if(desl[y][x] == -10){
-                    System.out.printf("-- ");
+                else if(est[y][x] <= -10){
+                    System.out.printf("-- ", est[y][x]);
                 }
                 else {
                     System.out.printf("%02d ", desl[y][x] + est[y][x]);
@@ -147,33 +256,32 @@ public class Star{
         while(!Arrays.equals(this.pos, this.chegada)){
 
             //Calcula pesos
-            int x = this.pos[0];
-            int y = this.pos[1];
-
+        
             //Verifica se tem obstaculos vizinhos
             //boolean[] obs = robot.getObstacle();
             boolean[] obs = robot.fooGetObstacle(this.pos);
 
             updateCost(obs, this.pos);
             
-            this.print();
-            pause();
+            // this.print();
+            // pause();
 
             //Vai ate a celula de menor valor
             int[] target_pos = lowestCellValue();
 
             //Calcula caminho JÁ visitado para a celula de menor valor
+            this.getPathTo(target_pos);
+
             //Manda para o robo o caminho
             //SIMULAÇÃO
             this.pos = target_pos;
-            System.out.printf("%d,%d\n",this.pos[0], this.pos[1]);
         }
     }
 
     //MAIN
     public static void main(String[] args) {
-        //Instancia do Robo
-        Robot r = new Robot();
+
+        FooRobot r = new FooRobot();
         //Pega as coordenadas do mundo
         int[] coords = r.getPosition();
         int[] saida = {coords[0], coords[1]};
@@ -182,7 +290,7 @@ public class Star{
         //Cria instância A*
         Star star = new Star(r, saida, chegada);
         star.start();
-        star.print();
+        // star.print();
 
     }
 }

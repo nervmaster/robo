@@ -1,10 +1,10 @@
 import java.util.Arrays;
 
-public class Robot implements Navigator {
+public class FooRobot implements Navigator {
     private int[][] obs;
 
 
-    public Robot() {
+    public FooRobot() {
         obs = new int[][]{{3,4},{4,2},{3,3},{3,5},{1,4},{0,5}};
     }
     //Metodos da interface
