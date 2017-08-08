@@ -16,7 +16,8 @@ public interface Navigator {
     //bool[1] -> celula esquerda
     //bool[2] -> celula acima
     //ex: robot.getObstacle() == [false,true,false]
-    public boolean[] getObstacle();
+    // public boolean[] getObstacle();
+    public boolean[] getObstacle(int[] pos);
 
     //Pergunta ao robo em que celula do mundo esta situado
     //Funcao chamada ao inicio do algoritmo onde sera determinado a posicao do robo e da chegada

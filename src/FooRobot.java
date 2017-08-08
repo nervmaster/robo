@@ -12,11 +12,11 @@ public class FooRobot implements Navigator {
         //Done
     }
 
-    public boolean[] getObstacle() {
-        return new boolean[]{false,true,false};
-    }
+    // public boolean[] getObstacle() {
+    //     return new boolean[]{false,true,false};
+    // }
 
-    public boolean[] fooGetObstacle(int[] pos) {
+    public boolean[] getObstacle(int[] pos) {
         int x,y;
         boolean[] result = new boolean[]{false,false,false};
         for(int[] obs : this.obs) {

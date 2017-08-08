@@ -17,7 +17,7 @@ public class Star{
     int[][] nn;
     int[] path;
 
-    FooRobot robot;
+    Navigator robot;
     
     //Metodos privadas
     private void resetMini(){
@@ -214,7 +214,7 @@ public class Star{
         return mat;
     }
     
-    public Star(FooRobot robot, int[] saida, int[] chegada){
+    public Star(Navigator robot, int[] saida, int[] chegada){
         this.robot = robot;
         this.chegada = chegada;
         this.saida = saida;
@@ -259,7 +259,7 @@ public class Star{
         
             //Verifica se tem obstaculos vizinhos
             //boolean[] obs = robot.getObstacle();
-            boolean[] obs = robot.fooGetObstacle(this.pos);
+            boolean[] obs = robot.getObstacle(this.pos);
 
             updateCost(obs, this.pos);
             
@@ -281,7 +281,7 @@ public class Star{
     //MAIN
     public static void main(String[] args) {
 
-        FooRobot r = new FooRobot();
+        Navigator r = new FooRobot();
         //Pega as coordenadas do mundo
         int[] coords = r.getPosition();
         int[] saida = {coords[0], coords[1]};
