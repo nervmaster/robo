@@ -8,7 +8,6 @@ import lejos.util.Delay;
 import lejos.nxt.Button;
 import lejos.nxt.ColorSensor;
 import lejos.nxt.LCD;
-//import lejos.nxt.LCD;
 import lejos.nxt.Motor;	
 import lejos.nxt.LCD;
 	
@@ -30,25 +29,27 @@ public class Robot implements Navigator {
         for(int i=0; i < comandos.length; i++){
         	if(comandos[i] == -1)
         		break;
-//        	Se esta na dir correta
+        	// Se esta na dir correta
         	if(comandos[i] == direcao){
-        		this.forward();
+				this.forward();
         	}else if(comandos[i] == direcao+1%4){
-        			this.turnRight();
-        			this.forward();
+				// Vizinho a direita
+        		this.turnRight();
+        		this.forward();
         	}else if(comandos[i] == direcao-1 || (comandos[i] == 3 && direcao == 0)){
-    				this.turnLeft();
-    				this.forward();
-    		
-        	}else{
-    				this.turnLeft();
-    				this.turnLeft();
-    				this.forward();
+				// vizinho a esquerda 
+				this.turnLeft();
+    			this.forward();
+    		}else{
+				//180 graus
+    			this.turnLeft();
+    			this.turnLeft();
+    			this.forward();
 			}
-        	
+			// direcao do robo é igual ao ultimo comando
         	direcao = comandos[i];
-        }
-//        Corrigir orientacao
+		}
+		// Corrigir a orientação após o ultimo comando
         if(direcao != 1) {
         	if(direcao == 2) {
         		this.turnLeft();
@@ -57,95 +58,42 @@ public class Robot implements Navigator {
         	} else {
         		this.turnRight();
         		this.turnRight();
-        	}	
+        	}
         }
         direcao = 1;
-    }
-    	
-    	
-    	
-    	//Done
-//    	if(direcao !=1){
-//    		if(direcao == 3){
-//    			for(int j:dir){
-//    				if(j == 4)
-//    					j=2;
-//    				else
-//    					j +=2;
-//    			}
-//    		}
-//    		if(direcao == 2 || direcao == 4){
-//    			for(int j:dir){
-//    				if(j == 4)
-//    					j=1;
-//    				else
-//    					j++;
-//    			}
-//    		}
-//    	}	
-//    	
-//    	
-//    	for(int i:dir){
-//    		//direita
-//    		if (i == -1){
-//    				break;
-//    		}else{
-//	    		if(i == 2 ){
-//	    			this.turnRight();
-//	    			this.forward();
-//	    			direcao++;
-//	    			if (direcao == 5)
-//	    				direcao = 1;
-//	    			
-//	    			for(int j:dir){
-//	    				if(j == 4)
-//	    					j=1;
-//	    				else
-//	    					j++;
-//	    			}    				
-//	    		}else if(i == 4){
-//	    			//Esquerda
-//	    			this.turnLeft();
-//	    			this.forward();
-//	    			direcao--;
-//	    			if (direcao == 0)
-//	    				direcao = 4;
-//	    			
-//	    			for(int j:dir){
-//	    				if(j==4) 
-//	    					j=1;
-//	    				else
-//	    					j++;
-//	    			}
-//	    		}else if(i == 1){
-//	    			this.forward();
-//	    		}
-//	
-//	    		
-//	    		
-//	    	}
-//    	}
-
+	}
+	
+	private int getMinSonicRead() {
+		int low = Integer.MAX_VALUE;
+		for(int i = 0; i < 1000; i++) {
+			int ted = sonic.getDistance();
+			if(ted < low)
+				low = ted;
+		}
+		return low;
+	}
 
     public boolean[] getObstacle() {
     	obstacles[0] = true;
     	obstacles[1] = true;
     	obstacles[2] = true;
 
-    	int distLeft, distFront, distRight;
+		int distLeft, distFront, distRight;
+		
+		int MINDIST = 20;
      
-     	distFront = sonic.getDistance();
+     	distFront = this.getMinSonicRead();
      	Motor.C.rotate(-90,false);
-     	distLeft = sonic.getDistance();
+     	distLeft = this.getMinSonicRead();
      	Motor.C.rotate(180,false);
-     	distRight = sonic.getDistance();
+     	distRight = this.getMinSonicRead();
      	Motor.C.rotate(-90,false);
      	
-     	if( distLeft >= 20 )
+     	if( distLeft >= MINDIST )
      		obstacles[0] = false;
-     	if( distFront >= 20 )
+     	if( distFront >= MINDIST )
      		obstacles[1] = false;
-     	if( distRight >= 20 )
+     	if( distRight >= MINDIST )
      		obstacles[2] = false;
      	
 //     	TESTE
@@ -162,37 +110,31 @@ public class Robot implements Navigator {
     public void turnRight() {
 		//virar a direita
     	//minimamente satisfatorio nota 5.7
-    	//487 = Nota 8.7
-		Motor.A.rotate(-475,true); //521
-		Motor.B.rotate(475,false);//521
+		//487 = Nota 8.7
+		int VALOR = 475;
 
+		Motor.A.rotate(-VALOR,true);
+		Motor.B.rotate(VALOR,false);
 	}
 	
 	public void turnLeft() {
-	//Virar esquerda
-	//Nota 5.5
+		//Virar esquerda
+		//Nota 5.5
 		//475 = nota 6.7
-	Motor.A.rotate(475,true);
-	Motor.B.rotate(-475,false);
-	
+		int VALOR = 475;
+		Motor.A.rotate(VALOR,true);
+		Motor.B.rotate(-VALOR,false);
 	}
 	
 	public void forward() {
-		
-		int tacoInicial = 0;
-		
-	
 		//Noooota 9.9
-		Motor.A.rotate(700, true);
-		Motor.B.rotate(700, false);
-		
-		
-		
-		
+		int VALOR = 700;
+
+		Motor.A.rotate(VALOR, true);
+		Motor.B.rotate(VALOR, false);
 	}
    
     public int[] getPosition() {
-//    	CALCULA POSIÇÃO   	
     	int pos = 0;
     	String str;
     	while(Button.waitForAnyPress(200) == 0) {
@@ -204,5 +146,4 @@ public class Robot implements Navigator {
     	pos = (pos >= 12) ? 11 : pos;
     	return new int[]{pos,6,0,6};
     } 
-    
 }
