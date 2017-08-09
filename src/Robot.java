@@ -14,80 +14,126 @@ import lejos.nxt.LCD;
 	
 
 public class Robot implements Navigator {
-    private int[][] obs;
-    int direcao = 1;
+    int direcao;
+    private UltrasonicSensor sonic;
 
+    private boolean[] obstacles;
+    
     public Robot() {
-        obs = new int[][]{{3,4},{4,2},{3,3},{3,5},{1,4},{0,5}};
+    	this.direcao = 1;
+    	this.sonic = new UltrasonicSensor(SensorPort.S4);
+    	this.obstacles = new boolean[3];
     }
+    
     //Metodos da interface
-    public void goTo(int[] dir) {
-        //Done
-    	int init = 0;
-    	if(direcao !=1){
-    		if(direcao == 3){
-    			for(int j:dir){
-    				if(j == 4)
-    					j=2;
-    				else
-    					j +=2;
-    			}
-    		}
-    		if(direcao == 2 || direcao == 4){
-    			for(int j:dir){
-    				if(j == 4)
-    					j=1;
-    				else
-    					j++;
-    			}
-    		}
-    	}	
-    	
-    	
-    	for(int i:dir){
-    		//direita
-    		if(i == 2 ){
-    			this.turnRight();
-    			this.forward();
-    			direcao++;
-    			if (direcao == 5)
-    				direcao = 1;
-    			
-    			for(int j:dir){
-    				if(j == 4)
-    					j=1;
-    				else
-    					j++;
-    			}    				
-    		}else if(i == 4){
-    			//Esquerda
-    			this.turnLeft();
-    			this.forward();
-    			direcao--;
-    			if (direcao == 0)
-    				direcao = 4;
-    			
-    			for(int j:dir){
-    				if(j==4) 
-    					j=1;
-    				else
-    					j++;
-    			}
-    		}else if(i == 1){
-    			this.forward();
-    		}
-
+    public void goTo(int[] comandos) {
+        for(int i=0; i < comandos.length; i++){
+        	if(comandos[i] == -1)
+        		break;
+//        	Se esta na dir correta
+        	if(comandos[i] == direcao){
+        		this.forward();
+        	}else if(comandos[i] == direcao+1%4){
+        			this.turnRight();
+        			this.forward();
+        	}else if(comandos[i] == direcao-1 || (comandos[i] == 3 && direcao == 0)){
+    				this.turnLeft();
+    				this.forward();
     		
-    		
-    	}
+        	}else{
+    				this.turnLeft();
+    				this.turnLeft();
+    				this.forward();
+			}
+        	
+        	direcao = comandos[i];
+        }
+//        Corrigir orientacao
+        if(direcao != 1) {
+        	if(direcao == 2) {
+        		this.turnLeft();
+        	} else if(direcao == 0) {
+        		this.turnRight();
+        	} else {
+        		this.turnRight();
+        		this.turnRight();
+        	}	
+        }
+        direcao = 1;
     }
+    	
+    	
+    	
+    	//Done
+//    	if(direcao !=1){
+//    		if(direcao == 3){
+//    			for(int j:dir){
+//    				if(j == 4)
+//    					j=2;
+//    				else
+//    					j +=2;
+//    			}
+//    		}
+//    		if(direcao == 2 || direcao == 4){
+//    			for(int j:dir){
+//    				if(j == 4)
+//    					j=1;
+//    				else
+//    					j++;
+//    			}
+//    		}
+//    	}	
+//    	
+//    	
+//    	for(int i:dir){
+//    		//direita
+//    		if (i == -1){
+//    				break;
+//    		}else{
+//	    		if(i == 2 ){
+//	    			this.turnRight();
+//	    			this.forward();
+//	    			direcao++;
+//	    			if (direcao == 5)
+//	    				direcao = 1;
+//	    			
+//	    			for(int j:dir){
+//	    				if(j == 4)
+//	    					j=1;
+//	    				else
+//	    					j++;
+//	    			}    				
+//	    		}else if(i == 4){
+//	    			//Esquerda
+//	    			this.turnLeft();
+//	    			this.forward();
+//	    			direcao--;
+//	    			if (direcao == 0)
+//	    				direcao = 4;
+//	    			
+//	    			for(int j:dir){
+//	    				if(j==4) 
+//	    					j=1;
+//	    				else
+//	    					j++;
+//	    			}
+//	    		}else if(i == 1){
+//	    			this.forward();
+//	    		}
+//	
+//	    		
+//	    		
+//	    	}
+//    	}
 
 
     public boolean[] getObstacle() {
-    	boolean left = true, front = true, right = true;
-         
-        int distLeft, distFront, distRight;
-     	UltrasonicSensor sonic = new UltrasonicSensor(SensorPort.S2);
+    	obstacles[0] = true;
+    	obstacles[1] = true;
+    	obstacles[2] = true;
+
+    	int distLeft, distFront, distRight;
+     
      	distFront = sonic.getDistance();
      	Motor.C.rotate(-90,false);
      	distLeft = sonic.getDistance();
@@ -96,22 +142,21 @@ public class Robot implements Navigator {
      	Motor.C.rotate(-90,false);
      	
      	if( distLeft >= 20 )
-     		left = false;
+     		obstacles[0] = false;
      	if( distFront >= 20 )
-     		front = false;
+     		obstacles[1] = false;
      	if( distRight >= 20 )
-     		right = false;
+     		obstacles[2] = false;
      	
+//     	TESTE
+//     	LCD.drawInt(distLeft, 0, 0);
+//     	LCD.drawString(Boolean.toString(left), 4, 0);
+//     	LCD.drawInt(distFront, 0, 2);
+//     	LCD.drawString(Boolean.toString(front), 4, 2);
+//     	LCD.drawInt(distRight, 0, 4);
+//     	LCD.drawString(Boolean.toString(right), 4, 4);
      	
-     	LCD.drawInt(distLeft, 0, 0);
-     	LCD.drawString(Boolean.toString(left), 4, 0);
-     	LCD.drawInt(distFront, 0, 2);
-     	LCD.drawString(Boolean.toString(front), 4, 2);
-     	LCD.drawInt(distRight, 0, 4);
-     	LCD.drawString(Boolean.toString(right), 4, 4);
-     	
-     	
-    	return new boolean[]{left,front,right};
+    	return obstacles;
     }
     
     public void turnRight() {
@@ -145,37 +190,19 @@ public class Robot implements Navigator {
 		
 		
 	}
-
-
-    public boolean[] fooGetObstacle(int[] pos) {
-        int x,y;
-        boolean[] result = new boolean[]{false,false,false};
-        for(int[] obs : this.obs) {
-            //abaixo
-            x = pos[0];
-            y = pos[1]-1;
-            if(Arrays.equals(new int[]{x,y}, obs)) {
-                result[0] = true;
-            }
-            
-            //esquerda
-            x = pos[0]-1;
-            y = pos[1];
-            if(Arrays.equals(new int[]{x,y}, obs)) {
-                result[1] = true;
-            }
-
-            //acima
-            x = pos[0];
-            y = pos[1]+1;
-            if(Arrays.equals(new int[]{x,y}, obs)) {
-                result[2] = true;
-            }
-        }
-        return result;
-    }
-        
+   
     public int[] getPosition() {
-        return new int[]{4,4,0,4};
+//    	CALCULA POSIÇÃO   	
+    	int pos = 0;
+    	String str;
+    	while(Button.waitForAnyPress(200) == 0) {
+    		LCD.clear();
+    		pos = sonic.getDistance()/20;
+    		str = String.valueOf(pos) + ",6  0,6";
+    		LCD.drawString(str, 1, 1);
+    	}
+    	pos = (pos >= 12) ? 11 : pos;
+    	return new int[]{pos,6,0,6};
     } 
+    
 }

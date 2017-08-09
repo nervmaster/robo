@@ -1,9 +1,9 @@
 import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Scanner;
-
 import java.lang.Math;
+// LEJOS
+// import lejos.nxt.Button;
+// import lejos.nxt.LCD;
 
 public class Star{
     //Coordenadas em X,Y
@@ -116,7 +116,7 @@ public class Star{
             walk = low_pos;
         }
 
-        return target;
+        return path;
     }
 
     private int estimateCostTo(int[] cell, int[] target) {
@@ -252,28 +252,55 @@ public class Star{
         System.out.print("\n");
     }
     public void start() {
-        
+    	String str = "";
         while(!Arrays.equals(this.pos, this.chegada)){
 
             //Calcula pesos
         
             //Verifica se tem obstaculos vizinhos
-            //boolean[] obs = robot.getObstacle();
-            boolean[] obs = robot.getObstacle(this.pos);
+            boolean[] obs = robot.getObstacle();
 
-            updateCost(obs, this.pos);
+            LCD.clear();
+            str = "";
+            for(int i = 0; i < obs.length; i++){
+            	str += String.valueOf(obs[i]);
+            }
             
+            LCD.drawString(str, 1, 1);
+            Button.waitForAnyPress();
+
+            
+            updateCost(obs, this.pos);
+             
             // this.print();
             // pause();
+            
 
             //Vai ate a celula de menor valor
             int[] target_pos = lowestCellValue();
+            LCD.clear();
+            str = "Target " + String.valueOf(target_pos[0]) + "," + String.valueOf(target_pos[1]);
+            LCD.drawString(str, 1, 1);
+            Button.waitForAnyPress();
+            
+            //Calcula caminho JÃ� visitado para a celula de menor valor
+            
+            int[] path = getPathTo(target_pos);
+            LCD.clear();
+            str = "";
+            for(int i = 0; i < path.length; i++) {
+            	if(path[i] == -1)
+            		break;
+            	str += String.valueOf(path[i] + " ");	
+            }
+            LCD.drawString(str, 1, 1);
+            
+            Button.waitForAnyPress();
 
-            //Calcula caminho JÁ visitado para a celula de menor valor
-            this.getPathTo(target_pos);
-
+            robot.goTo(path);
+            
             //Manda para o robo o caminho
-            //SIMULAÇÃO
+            //SIMULAÃ‡ÃƒO
             this.pos = target_pos;
         }
     }
@@ -281,16 +308,20 @@ public class Star{
     //MAIN
     public static void main(String[] args) {
 
-        Navigator r = new FooRobot();
+        Navigator r = new Robot();
+        
         //Pega as coordenadas do mundo
         int[] coords = r.getPosition();
         int[] saida = {coords[0], coords[1]};
         int[] chegada = {coords[2], coords[3]};
 
-        //Cria instância A*
+        
+        //Cria instÃ¢ncia A*
         Star star = new Star(r, saida, chegada);
+        LCD.clear();
+        LCD.drawString("Press Button", 1, 1);
+        Button.waitForAnyPress();
         star.start();
-        // star.print();
-
+        star.print();
     }
 }
